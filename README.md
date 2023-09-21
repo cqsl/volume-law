@@ -21,14 +21,14 @@ Accompanying code for the comment paper "Comment on *Can Neural Quantum States L
     - `disf_bf_energy_errors.py`: computing the relative energy error of the optimized FF+SD for the DF model. Data in `disf_bf_energy_errors.out`.
     - `disf_bf_runs.py`: optimizing FF+SD for the DF model. 
     - `disf_simple.out`: best infidelity for the optimization of FF for the DF model. 
-    - `disf_simple_energy_errors.py`: computing the relative energy error of the optimized SD for the DF model. Data in `disf_simple_energy_errors.out`.
+    - `disf_simple_energy_errors.py`: computing the relative energy error of the optimized FF for the DF model. Data in `disf_simple_energy_errors.out`.
     - `disf_simple_runs.py`: optimizing FF for the DF model. 
     - `figure.pdf`: figure in the comment paper. 
     - `plot.py`: plotting the data and creating the figure.
     - `runs_entropy.py`: computing the Rényi-2 entropy of the exact DF and QSK ground states. 
     - `sk.out`: best infidelity for the optimization of FF for the QSK model. 
-    - `sk_energy_errors.py`: computing the relative energy error of the optimized FF+SD for the DF model. Data in `sk_energy_errors.out`.
-    - `sk_runs.py`: optimizing FF+SD for the DF model. 
+    - `sk_energy_errors.py`: computing the relative energy error of the optimized FF for the QSK model. Data in `sk_energy_errors.out`.
+    - `sk_runs.py`: optimizing FF for the QSK model. 
 
 
 

@@ -27,7 +27,7 @@ n_Ns = len(N_values)
 n_seeds = len(seeds)
 n_alphas = len(alphas)
 
-filename = "disf_bf_bestvar_.out"
+filename = "disf_bf.out"
 
 for i in range(n_Ns):
     N = N_values[i]
@@ -52,7 +52,6 @@ for i in range(n_Ns):
                     learning_rate=0.002,
                     num_epochs_overlap=1000,
                     verbose=True,
-                    return_best_variables=True,
                 )
                 best_losses = load_dict(filename)
                 best_losses[key] = best_loss_value
@@ -60,9 +59,3 @@ for i in range(n_Ns):
 
                 with open(filename, "w") as json_file:
                     json.dump(best_losses, json_file)
-
-                with open(
-                    f"energy_params_disf_bf_final/disf_bf_bestvar_N{N}_seed{seed}_alpha{alpha}_.mpack",
-                    "wb",
-                ) as file:
-                    file.write(flax.serialization.to_bytes(best_variables))

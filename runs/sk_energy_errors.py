@@ -49,7 +49,7 @@ def load_dict(file_path):
         return {}
 
 
-folder = "energy_params_sk_final_really/"
+folder = "energy_params_sk/"
 
 N_values = [10, 12, 14, 16, 18, 20]
 seeds = range(20)

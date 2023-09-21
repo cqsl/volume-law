@@ -66,7 +66,7 @@ def load_dict(file_path):
         return {}
 
 
-folder = "energy_params_disf_bf_final_really/"
+folder = "energy_params_disf_bf/"
 
 N_values = [10, 12, 14, 16, 18, 20]
 seeds = range(10)

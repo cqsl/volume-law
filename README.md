@@ -14,8 +14,8 @@ Accompanying code for the comment paper "Comment on *Can Neural Quantum States L
 - `sk.py`: file containing functions for generating the quantum Sherrington-Kirkpatrick Hamiltonian (QSK) and for diagonalizing it.
 - `slater.py`: `flax` model for the Slater determinant NQS with backflow transformation (FF+SD).
 
-- **infidelity**: containing the results of the simulations.
-    - **energy_params_disf_bf**, **energy_params_disf_simple**, **energy_params_sk**: folder containing the parameters of the optimized NQSs used to compute the energy errors for the two models.
+- `runs/`: containing the results of the simulations.
+    - `energy_params_disf_bf/`, `energy_params_disf_simple/`, `energy_params_sk/`: folders containing the parameters of the optimized NQSs used to compute the energy errors for the two models.
     - `df_entropy.out`: Rényi-2 entropy of the exact DF ground state. 
     - `disf_bf.out`: best infidelity for the optimization of FF+SD for the DF model. 
     - `disf_bf_energy_errors.py`: computing the relative energy error of the optimized FF+SD for the DF model. Data in `disf_bf_energy_errors.out`.

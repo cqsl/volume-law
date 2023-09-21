@@ -1,5 +1,5 @@
 # Neural Quantum States for volume-law entangled states
-Accompanying code for the comment paper "Comment on *Can Neural Quantum States Learn Volume-Law Ground States?*" (https://link.aps.org/doi/10.1103/PhysRevLett.131.036502).
+Accompanying code for "Comment on *Can Neural Quantum States Learn Volume-Law Ground States?*" (https://link.aps.org/doi/10.1103/PhysRevLett.131.036502).
 
 [![Slack](https://img.shields.io/badge/slack-chat-green.svg)](https://join.slack.com/t/mlquantum/shared_invite/zt-19wibmfdv-LLRI6i43wrLev6oQX0OfOw)
 
@@ -23,7 +23,7 @@ Accompanying code for the comment paper "Comment on *Can Neural Quantum States L
     - `disf_simple.out`: best infidelity for the optimization of FF for the DF model. 
     - `disf_simple_energy_errors.py`: computing the relative energy error of the optimized FF for the DF model. Data in `disf_simple_energy_errors.out`.
     - `disf_simple_runs.py`: optimizing FF for the DF model. 
-    - `figure.pdf`: figure in the comment paper. 
+    - `figure.pdf`: figure in the comment. 
     - `plot.py`: plotting the data and creating the figure.
     - `runs_entropy.py`: computing the Rényi-2 entropy of the exact DF and QSK ground states. 
     - `sk.out`: best infidelity for the optimization of FF for the QSK model. 

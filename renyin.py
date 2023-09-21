@@ -1,10 +1,6 @@
 import qutip
-import jax
 import jax.numpy as jnp
 import numpy as np
-from sk import generate_state_sk
-import matplotlib.pyplot as plt
-from tqdm import tqdm
 
 
 def renyin(n, data, n_comps, subsys):

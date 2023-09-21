@@ -29,7 +29,6 @@ def try_to_load(file_name):
 
 
 def generate_state_df(N, seed=1234):
-    import netket as nk
     from netket import experimental as nkx
     from scipy.sparse.linalg import eigsh
 
@@ -55,7 +54,7 @@ def generate_state_df(N, seed=1234):
     print("Creating Hamiltonian...")
     H = 0.0
 
-    for i in tqm(range(N)):
+    for i in tqdm(range(N)):
         for j in range(i + 1, N, 1):
             H += V1[i, j] * (cdag(i) * c(j) + cdag(j) * c(i))
             H += nc(i) * nc(j) * V2[i, j]
@@ -77,9 +76,7 @@ def generate_state_df(N, seed=1234):
 
 
 def generate_hamiltonian_df(N, seed=1234):
-    import netket as nk
     from netket import experimental as nkx
-    from scipy.sparse.linalg import eigsh
 
     hi = nkx.hilbert.SpinOrbitalFermions(N, s=None, n_fermions=N // 2)
 

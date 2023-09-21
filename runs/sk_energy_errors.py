@@ -3,16 +3,11 @@ import sys
 sys.path.append("../")
 
 from sk import generate_state_sk as generate_state
-from learning import train
 import numpy as np
 import jax.numpy as jnp
 import json
-from slater import SlaterDeterminant, LogSlaterDeterminant, LogSlaterBfDeterminant
-import netket.experimental as nkx
 import flax
 import netket as nk
-from netket import experimental as nkx
-from scipy.sparse.linalg import eigsh
 from netket.operator.spin import sigmax, sigmaz
 from simple_model import SimpleModel
 

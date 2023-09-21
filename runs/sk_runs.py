@@ -4,7 +4,6 @@ sys.path.append("../")
 
 from sk import generate_state_sk
 from learning import train
-import numpy as np
 import json
 from simple_model import SimpleModel
 

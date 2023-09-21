@@ -1,5 +1,4 @@
 import jax.numpy as jnp
-from jax import random
 from functools import partial
 import jax
 import optax
@@ -93,6 +92,7 @@ def train(
             print(f"# Epoch {epoch}, Loss: {np.exp(loss_value):.5e}")
 
     if return_best_entropy:
+        N = x_configs.shape[-1]
         entropy_idx = 2
         subsys = np.arange(0, int(N / 2))
         best_state = model.apply(best_variables, input_data)

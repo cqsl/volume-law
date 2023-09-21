@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Sequence, Callable, Optional, Tuple
+from typing import Any, Tuple
 import flax.linen as nn
 import jax
 import jax.numpy as jnp
@@ -7,10 +7,7 @@ from jax.numpy.linalg import det
 
 import netket.experimental as nkx
 from netket.utils.types import NNInitFunc
-from netket.nn.masked_linear import default_kernel_init
 from initializers import row_orthogonal_kernel_init
-from jax.nn.initializers import zeros, normal
-from transformers import TransformerBf
 
 PRNGKey = Any
 Shape = Tuple[int, ...]

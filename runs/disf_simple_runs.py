@@ -4,7 +4,6 @@ sys.path.append("../")
 
 from dis_fermions import generate_state_df as generate_state
 from learning import train
-import numpy as np
 import json
 from simple_model import SimpleModel
 

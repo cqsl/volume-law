@@ -1,4 +1,4 @@
-# Neural Quantum States for volume-law entangled states
+# Neural Quantum States for Volume-Law Ground States
 Accompanying code for "Comment on *Can Neural Quantum States Learn Volume-Law Ground States?*" (https://arxiv.org/abs/2309.11534).
 
 [![Slack](https://img.shields.io/badge/slack-chat-green.svg)](https://join.slack.com/t/mlquantum/shared_invite/zt-19wibmfdv-LLRI6i43wrLev6oQX0OfOw)

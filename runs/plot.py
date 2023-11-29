@@ -9,6 +9,14 @@ plt.rc("text", usetex=True)
 plt.rc("font", family="serif", size=9)
 
 
+def load_dict(file_path):
+    try:
+        with open(file_path, "r") as json_file:
+            loaded_dict = json.load(json_file)
+        return loaded_dict
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
 def get_alpha_data(state):
     filename = state + ".out"
     with open(filename, "r") as json_file:
@@ -90,11 +98,68 @@ data_disf_bf = get_alpha_data("disf_bf_energy_errors")
 data_disf_simple = get_alpha_data("disf_simple_energy_errors")
 data_sk = get_alpha_data("sk_energy_errors")
 
+Ns_bf = np.array([10, 12, 14 ,16 ,18, 20])
+seeds_bf = np.arange(10)
+alphas_bf = [1/8, 1/4, 1/2, 1, 2]
+rtols_bf = [5e-4, 1e-3, 5e-3]
+np_alphas_bf = np.array(alphas_bf)
+n_parameters_bf = 0.5 * np.floor(np_alphas_bf[None,:]*Ns_bf[:,None]) * Ns_bf[:,None]**2 + Ns_bf[:,None]**2 + np.floor(np_alphas_bf[None,:]*Ns_bf[:,None]) * Ns_bf[:,None]
+
+dict_bf = load_dict('disf_bf_energy_errors.out')
+rel_bf = np.zeros((len(Ns_bf), len(seeds_bf), len(alphas_bf)))
+
+for (i, N) in enumerate(Ns_bf):
+    for (j, seed) in enumerate(seeds_bf):
+        for (k, alpha) in enumerate(alphas_bf):
+            rel_bf[i, j, k] = dict_bf[f'({N}, {seed}, {alpha})']
+
+scaling_bf = np.array([[[np.interp(rtol_bf, rel_bf[i, j, :], n_parameters_bf[i, :], period=np.inf) for i in range(len(Ns_bf))] for j in range(len(seeds_bf))] for rtol_bf in rtols_bf])
+
+
+Ns_simp = np.array([10, 12, 14, 16, 18])
+seeds_simp = np.arange(10)
+alphas_simp = [1, 2, 4, 8, 16, 32, 64]
+rtols_simp = [5e-3, 1e-2]
+np_alphas_simp = np.array(alphas_simp)
+n_parameters_simp = 2*np.floor(np_alphas_simp[None,:]*Ns_simp[:,None]) + np.floor(np_alphas_simp[None,:]*Ns_simp[:,None]) * Ns_simp[:,None]
+
+dict_simp = load_dict('disf_simple_energy_errors.out')
+rel_simp = np.zeros((len(Ns_simp), len(seeds_simp), len(alphas_simp)))
+
+for (i, N) in enumerate(Ns_simp):
+    for (j, seed) in enumerate(seeds_simp):
+        for (k, alpha) in enumerate(alphas_simp):
+            rel_simp[i, j, k] = dict_simp[f'({N}, {seed}, {alpha})']
+
+from scipy.interpolate import InterpolatedUnivariateSpline
+
+scaling_simp_1 = np.array([[np.interp(rtols_simp[0], rel_simp[i, j, :], n_parameters_simp[i, :], period=np.inf) for i in range(len(Ns_simp[:-1]))] for j in range(len(seeds_simp))])
+xs = np.log(n_parameters_simp[-1, :])
+ys = np.log(rel_simp[-1, :, :])
+sps = [InterpolatedUnivariateSpline(xs, _ys, k=1, ext=0) for _ys in ys]
+col = np.array([np.interp(rtols_simp[0], np.exp(sp(np.log(np.arange(1000, 1_000_000, 10000)))), np.arange(1000, 1_000_000, 10000), period=np.inf) for sp in sps]).reshape(-1, 1)
+scaling_simp_1 = np.hstack((scaling_simp_1, col))
+
+scaling_simp_2 = np.array([[np.interp(rtols_simp[1], rel_simp[i, j, :], n_parameters_simp[i, :], period=np.inf) for i in range(len(Ns_simp[:-2]))] for j in range(len(seeds_simp))])
+xs = np.log(n_parameters_simp[-2, :])
+ys = np.log(rel_simp[-2, :, :])
+sps = [InterpolatedUnivariateSpline(xs, _ys, k=1, ext=0) for _ys in ys]
+col_1 = np.array([np.interp(rtols_simp[1], np.exp(sp(np.log(np.arange(1000, 1_000_000, 10000)))), np.arange(1000, 1_000_000, 10000), period=np.inf) for sp in sps]).reshape(-1, 1)
+
+xs = np.log(n_parameters_simp[-1, :])
+ys = np.log(rel_simp[-1, :, :])
+sps = [InterpolatedUnivariateSpline(xs, _ys, k=1, ext=0) for _ys in ys]
+col_2 = np.array([np.interp(rtols_simp[1], np.exp(sp(np.log(np.arange(1000, 1_000_000, 10000)))), np.arange(1000, 1_000_000, 10000), period=np.inf) for sp in sps]).reshape(-1, 1)
+
+scaling_simp_2 = np.hstack((scaling_simp_2, col_1, col_2))
+
+scaling_simp = np.stack((scaling_simp_1, scaling_simp_2), axis=0)
+
 # Get a colormap
 cmap_renyi = plt.colormaps.get_cmap("Accent")
 cmap = plt.colormaps.get_cmap("viridis")
 alphas = np.array([int(a) for a in alpha_data_simple.keys()])
-color_idcs = np.linspace(0, 1, len(alphas))
+color_idcs = np.linspace(0, 1, len(alphas)-1)
 cs = cmap(color_idcs)
 
 #################
@@ -103,24 +168,33 @@ plt.close("all")
 
 fig = plt.figure(figsize=(3.40 * 2, 2.10 - 0.1))
 gs = fig.add_gridspec(
-    nrows=2,
-    ncols=5,
-    wspace=0.5,
+    nrows=3,
+    ncols=7,
+    wspace=0.35,
     hspace=0.25,
-    width_ratios=[2.5, 2.5, 0.8, 2.5, 1.5],
-    height_ratios=[1, 1],
+    width_ratios=[2.5, 0.45, 2.5, 1.15, 2.5, 0., 1.5],
+    height_ratios=[0.1, 1, 1],
 )
 
-ax2 = fig.add_subplot(gs[:, 0])
-ax3 = fig.add_subplot(gs[:, 1])
-dummy_ax = fig.add_subplot(gs[:, 2])
-dummy_ax_ = fig.add_subplot(gs[:, :2])
-ax4 = fig.add_subplot(gs[:, 3])
-ax1_qsk = fig.add_subplot(gs[0, 4])
-ax1_df = fig.add_subplot(gs[1, 4])
-
+dummy_ax = fig.add_subplot(gs[0, :])
+dummy_ax.axis("off")
+ax2 = fig.add_subplot(gs[1:, 0])
+dummy_ax = fig.add_subplot(gs[1:, 1])
+dummy_ax_ = fig.add_subplot(gs[1:, :1])
 dummy_ax.axis("off")
 dummy_ax_.axis("off")
+ax3 = fig.add_subplot(gs[1:, 2])
+dummy_ax = fig.add_subplot(gs[1:, 3])
+dummy_ax_ = fig.add_subplot(gs[1:, :3])
+dummy_ax.axis("off")
+dummy_ax_.axis("off")
+ax4 = fig.add_subplot(gs[1:, 4])
+dummy_ax = fig.add_subplot(gs[1:, 5])
+dummy_ax_ = fig.add_subplot(gs[1:, :5])
+dummy_ax.axis("off")
+dummy_ax_.axis("off")
+ax1_qsk = fig.add_subplot(gs[1, 6])
+ax1_df = fig.add_subplot(gs[2, 6])
 
 ax1_qsk.set_ylabel(r"$S_2$")
 ax1_df.set_ylabel(r"$S_2$")
@@ -192,7 +266,8 @@ plt.setp(ax1_qsk.get_xticklabels(), visible=False)
 ax2.set_yscale("log")
 ax2.set_xlim(10, 20)
 ax2.set_xticks([10, 15, 20])
-ax2.set_ylim(1.0e-6, 1.0e-2)
+ax2.set_ylim(1.0e-6, 1.0)
+ax2.set_yticks([1e-6, 1e-4, 1e-2, 1])
 for i, (alpha, curve_data) in enumerate(alpha_data_sk.items()):
     N_values = [N for N, _, _ in curve_data]
     mean_values = [mean for _, mean, _ in curve_data]
@@ -227,6 +302,33 @@ ax3.set_yscale("log")
 ax3.set_yticks([1e-6, 1e-4, 1e-2, 1.0])
 
 # Create a plot for each alpha
+for i, (alpha, curve_data) in enumerate(alpha_data_sk.items()):
+    N_values = [N for N, _, _ in curve_data]
+    mean_values = [mean for _, mean, _ in curve_data]
+    sem_values = [sem for _, _, sem in curve_data]
+
+    # Combine and sort the data based on N_values
+    sorted_curve_data = sorted(curve_data, key=lambda x: x[0])
+
+    N_values = [N for N, _, _ in sorted_curve_data]
+    mean_values = [mean for _, mean, _ in sorted_curve_data]
+    sem_values = [sem for _, _, sem in sorted_curve_data]
+
+    ax2.errorbar(
+        N_values,
+        mean_values,
+        yerr=sem_values,
+        fmt="d-",
+        linewidth=1,
+        markersize=3,
+        markeredgecolor="black",
+        markeredgewidth=0.4,
+        capsize=3,
+        color=cs[i],
+        label=r"$\alpha=" + str(alpha) + "$",
+    )
+
+# Create a plot for each alpha
 for i, (alpha, curve_data) in enumerate(alpha_data_simple.items()):
     N_values = [N for N, _, _ in curve_data]
     mean_values = [mean for _, mean, _ in curve_data]
@@ -240,7 +342,7 @@ for i, (alpha, curve_data) in enumerate(alpha_data_simple.items()):
     sem_values = [sem for _, _, sem in sorted_curve_data]
 
     if alpha < 32:
-        ax3.errorbar(
+        ax2.errorbar(
             N_values,
             mean_values,
             yerr=sem_values,
@@ -271,7 +373,7 @@ for i, (alpha, curve_data) in enumerate(alpha_data_bf.items()):
     mean_values = [mean for _, mean, _ in sorted_curve_data]
     sem_values = [sem for _, _, sem in sorted_curve_data]
 
-    ax3.errorbar(
+    ax2.errorbar(
         N_values,
         mean_values,
         yerr=sem_values,
@@ -285,15 +387,12 @@ for i, (alpha, curve_data) in enumerate(alpha_data_bf.items()):
         label=r"$\alpha=" + str(alpha) + "$",
     )
 
-ax3.axhline(y=1.0e-3, color="grey", linestyle="--", linewidth=1, label=r"$10^{-3}$")
-
-ax3.set_xlabel(r"$L$")
 
 fig.subplots_adjust(
-    left=0.085, bottom=0.2, right=0.98, top=0.95, wspace=0.35, hspace=None
+    left=0.085, bottom=0.2-0.1, right=0.98, top=0.85, wspace=0, hspace=None
 )
 
-cbar_ax = fig.add_axes([0.49, 0.2, 0.02, 0.75])  # Adjust position and size
+cbar_ax = fig.add_axes([0.49+0.03, 0.1, 0.015, 0.675])  # Adjust position and size
 
 cbar = plt.matplotlib.colorbar.ColorbarBase(
     cbar_ax,
@@ -309,23 +408,21 @@ cbar.ax.tick_params(axis="y", direction="in")
 cbar.set_label(r"$\alpha$", rotation=0)
 cbar.ax.set_yticklabels([1, 2, 4, 8, 16])  # Customize tick labels
 
-legend_handles = [matplotlib.lines.Line2D([0], [0], color="black", label="FF")]
-legend = matplotlib.legend.Legend(
-    ax3, legend_handles, labels=["FF"], frameon=False, loc="upper left"
-)
-legend.set_bbox_to_anchor((0.4, 0.7))
-ax3.add_artist(legend)
 legend_handles = [
-    matplotlib.lines.Line2D([0], [0], color="black", linestyle="-.", label="FF+SD")
-]
+    matplotlib.lines.Line2D([0], [0], marker='d', linestyle='', color="black", label="QSK"),
+    matplotlib.lines.Line2D([0], [0], marker='o', linestyle='', color="black", label="DF"),
+    matplotlib.lines.Line2D([0], [0], color="black", label="FF"),
+    matplotlib.lines.Line2D([0], [0], color="black", linestyle="-.", label="FF+SD"),
+    ]
 legend = matplotlib.legend.Legend(
-    ax3, legend_handles, labels=["FF+SD"], frameon=False, loc="lower right"
+    ax2, legend_handles, ncols=4, columnspacing=1.2, labels=['QSK', 'DF', 'FF', 'FF+SD'], frameon=False, loc="upper left"
 )
-legend.set_bbox_to_anchor((1.025, -0.05))
-ax3.add_artist(legend)
+legend.set_bbox_to_anchor((-0.15, 1.25))
+ax2.add_artist(legend)
+
 
 ax3.text(
-    0.1,
+    0.125,
     0.93,
     r"(b)",
     color="black",
@@ -335,7 +432,7 @@ ax3.text(
     transform=ax3.transAxes,
 )
 ax2.text(
-    0.1,
+    0.125,
     0.93,
     r"(a)",
     color="black",
@@ -345,7 +442,7 @@ ax2.text(
     transform=ax2.transAxes,
 )
 ax4.text(
-    0.1,
+    0.125,
     0.93,
     r"(c)",
     color="black",
@@ -356,7 +453,7 @@ ax4.text(
 )
 
 ax1_qsk.text(
-    0.2,
+    0.25,
     0.8,
     r"(d1)",
     color="black",
@@ -366,7 +463,7 @@ ax1_qsk.text(
     transform=ax1_qsk.transAxes,
 )
 ax1_df.text(
-    0.2,
+    0.25,
     0.8,
     r"(d2)",
     color="black",
@@ -386,10 +483,9 @@ alphas = np.array([int(a) for a in data_disf_bf.keys()])
 color_idcs = np.linspace(0, 1, np.sum(alphas < 32))
 cs = cmap(color_idcs)
 
-ax4.set_yscale("log")
-ax4.set_xlim(10, 20)
-ax4.set_xticks([10, 15, 20])
-# ax4.set_ylim(1.0e-6, 1.0)
+ax3.set_yscale("log")
+ax3.set_xlim(10, 20)
+ax3.set_xticks([10, 15, 20])
 
 for i, (alpha, curve_data) in enumerate(data_disf_bf.items()):
     N_values = [N for N, _, _ in curve_data]
@@ -403,19 +499,20 @@ for i, (alpha, curve_data) in enumerate(data_disf_bf.items()):
     mean_values = [mean for _, mean, _ in sorted_curve_data]
     sem_values = [sem for _, _, sem in sorted_curve_data]
 
-    ax4.errorbar(
-        N_values,
-        mean_values,
-        yerr=sem_values,
-        fmt="o-.",
-        linewidth=1,
-        markersize=3,
-        markeredgecolor="black",
-        markeredgewidth=0.4,
-        capsize=3,
-        color=cs[0],
-        label=r"$\alpha=" + str(alpha) + "$",
-    )
+    if alpha == 1:
+        ax3.errorbar(
+            N_values,
+            mean_values,
+            yerr=sem_values,
+            fmt="o-.",
+            linewidth=1,
+            markersize=3,
+            markeredgecolor="black",
+            markeredgewidth=0.4,
+            capsize=3,
+            color=cs[0],
+            label=r"$\alpha=" + str(alpha) + "$",
+        )
 
 for i, (alpha, curve_data) in enumerate(data_disf_simple.items()):
     N_values = [N for N, _, _ in curve_data]
@@ -429,19 +526,20 @@ for i, (alpha, curve_data) in enumerate(data_disf_simple.items()):
     mean_values = [mean for _, mean, _ in sorted_curve_data]
     sem_values = [sem for _, _, sem in sorted_curve_data]
 
-    ax4.errorbar(
-        N_values,
-        mean_values,
-        yerr=sem_values,
-        fmt="o-",
-        linewidth=1,
-        markersize=3,
-        markeredgecolor="black",
-        markeredgewidth=0.4,
-        capsize=3,
-        color=cs[0],
-        label=r"$\alpha=" + str(alpha) + "$",
-    )
+    if alpha == 1:
+        ax3.errorbar(
+            N_values,
+            mean_values,
+            yerr=sem_values,
+            fmt="o-",
+            linewidth=1,
+            markersize=3,
+            markeredgecolor="black",
+            markeredgewidth=0.4,
+            capsize=3,
+            color=cs[0],
+            label=r"$\alpha=" + str(alpha) + "$",
+        )
 
 for i, (alpha, curve_data) in enumerate(data_sk.items()):
     N_values = [N for N, _, _ in curve_data]
@@ -455,25 +553,74 @@ for i, (alpha, curve_data) in enumerate(data_sk.items()):
     mean_values = [mean for _, mean, _ in sorted_curve_data]
     sem_values = [sem for _, _, sem in sorted_curve_data]
 
-    ax4.errorbar(
-        N_values,
-        mean_values,
-        yerr=sem_values,
-        fmt="d-",
-        linewidth=1,
-        markersize=3,
-        markeredgecolor="black",
-        markeredgewidth=0.4,
-        capsize=3,
-        color=cs[0],
-        label=r"$\alpha=" + str(alpha) + "$",
-    )
+    if alpha == 1:
+        ax3.errorbar(
+            N_values,
+            mean_values,
+            yerr=sem_values,
+            fmt="d-",
+            linewidth=1,
+            markersize=3,
+            markeredgecolor="black",
+            markeredgewidth=0.4,
+            capsize=3,
+            color=cs[0],
+            label=r"$\alpha=" + str(alpha) + "$",
+        )
 
-ax4.axhline(y=1.0e-3, color="grey", linestyle="--", linewidth=1, label=r"$10^{-3}$")
+ax3.axhline(y=1.0e-3, color="grey", linestyle="--", linewidth=1, label=r"$10^{-3}$")
 
-ax4.set_yscale("log")
-ax4.set_xlim(10, 20)
-ax4.set_xlabel("$L$")
-ax4.set_ylabel(r"Mean $|\frac{E_{\theta} - E_0}{E_0}|$")
+ax3.set_yscale("log")
+ax3.set_xlim(10, 20)
+ax3.set_xlabel("$L$")
+ax3.set_ylabel(r"Mean $|\frac{E_{\theta} - E_0}{E_0}|$")
+
+cmap = plt.colormaps.get_cmap("viridis")
+color_idcs = np.linspace(0, 1, 4)
+cs = cmap(color_idcs)
+
+for i in range(len(rtols_bf)):
+    ax4.plot(np.log(Ns_bf), np.mean(scaling_bf[i, :, :], axis=-2), marker='o', linestyle='--', color=cs[i], linewidth=1, markersize=3, markeredgecolor="black", markeredgewidth=0.4)
+    
+for i in range(len(rtols_simp)):
+    ax4.plot(np.log(Ns_simp), np.mean(scaling_simp[i, :, :], axis=-2), marker='o', color=cs[i+2], linewidth=1, markersize=3, markeredgecolor="black", markeredgewidth=0.4)
+
+ax4.plot(np.log(Ns_simp)[-1], np.mean(scaling_simp[-1, :, :], axis=-2)[-1], marker='o', color='none', linestyle='', markersize=6, markeredgecolor="red", markeredgewidth=0.4)
+ax4.plot(np.log(Ns_simp)[-2:], np.mean(scaling_simp[-2, :, :], axis=-2)[-2:], marker='o', color='none', linestyle='', markersize=6, markeredgecolor="red", markeredgewidth=0.4)
+
+ax4.set_ylim(100, 300000)
+ax4.set_yscale('log')
+ax4.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
+ax4.get_xaxis().set_minor_formatter(matplotlib.ticker.NullFormatter())
+ax4.set_xticks(np.log(np.array([10, 12, 14, 16, 18, 20])))
+ax4.set_xticklabels([r'$\ln 10$', '', r'$\ln 14$', '', '', r'$\ln 20$'])
+ax4.set_xlabel(r'$\ln L$')
+ax4.set_ylabel('Number of parameters')
+
+cbar_ax = fig.add_axes([0.66+0.02, 0.45-0.1, 0.01, 0.3])  # Adjust position and size
+
+cbar = plt.matplotlib.colorbar.ColorbarBase(
+    cbar_ax,
+    cmap=cmap,
+    orientation="vertical",
+    norm=plt.matplotlib.colors.Normalize(0, 3),  # vmax and vmin
+    ticks=np.arange(0, 4),
+)
+
+cbar.ax.tick_params(axis="y", direction="in")
+
+cbar.ax.set_yticklabels(['', r'$10^{-3}$', '', r'$10^{-2}$'], fontsize=5)  # Customize tick labels
+
+ax4.text(
+    0.1,
+    0.6,
+    r"rel. energy tol.",
+    color="black",
+    fontsize=7,
+    horizontalalignment="center",
+    verticalalignment="center",
+    transform=ax4.transAxes,
+    rotation=90,
+)
 
 plt.savefig("figure.pdf", format="pdf", bbox_inches="tight")

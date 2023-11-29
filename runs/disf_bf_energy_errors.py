@@ -27,7 +27,6 @@ def generate_symmetric_matrix(N, seed=1234):
 
 
 def compute_energy(N, state, seed=1234):
-
     hi = nkx.hilbert.SpinOrbitalFermions(N, s=None, n_fermions=N // 2)
 
     V1 = generate_symmetric_matrix(N, seed)
@@ -70,7 +69,7 @@ folder = "energy_params_disf_bf/"
 
 N_values = [10, 12, 14, 16, 18, 20]
 seeds = range(30)
-alphas = [1/8, 1/4, 1/2, 1, 2]
+alphas = [1 / 8, 1 / 4, 1 / 2, 1, 2]
 
 n_Ns = len(N_values)
 n_seeds = len(seeds)
@@ -97,7 +96,6 @@ for i in range(n_Ns):
             )
 
             if not (key in best_energy_errors):
-
                 with open(
                     folder + f"disf_bf_bestvar_N{N}_seed{seed}_alpha{alpha}.mpack", "rb"
                 ) as file:

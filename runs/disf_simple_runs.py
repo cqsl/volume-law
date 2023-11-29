@@ -28,7 +28,7 @@ n_Ns = len(N_values)
 n_seeds = len(seeds)
 n_alphas = len(alphas)
 
-folder = 'energy_params_disf_simple'
+folder = "energy_params_disf_simple"
 
 for i in range(n_Ns):
     N = N_values[i]
@@ -39,12 +39,14 @@ for i in range(n_Ns):
         for k in range(n_alphas):
             alpha = alphas[k]
             key = str((N, seed, alpha))
-            filename = os.path.join(folder, f"disf_simple_bestloss_N{N}_seed{seed}_alpha{alpha}.out")
+            filename = os.path.join(
+                folder, f"disf_simple_bestloss_N{N}_seed{seed}_alpha{alpha}.out"
+            )
 
             best_losses = load_dict(filename)
             hi = nkx.hilbert.SpinOrbitalFermions(n_orbitals=N, n_fermions=N // 2)
             model = SimpleModel(hidden_units=int(alpha * N))
-            
+
             if not (key in best_losses):
                 best_loss_value, best_variables = train(
                     x_configs,
@@ -58,8 +60,14 @@ for i in range(n_Ns):
                 best_losses = load_dict(filename)
                 best_losses[key] = best_loss_value
                 print("# ", key, best_loss_value)
-                
-                with open(os.path.join(folder, f"disf_simple_bestvar_N{N}_seed{seed}_alpha{alpha}.mpack"), "wb") as file:
+
+                with open(
+                    os.path.join(
+                        folder,
+                        f"disf_simple_bestvar_N{N}_seed{seed}_alpha{alpha}.mpack",
+                    ),
+                    "wb",
+                ) as file:
                     file.write(flax.serialization.to_bytes(best_variables))
 
                 with open(filename, "w") as json_file:

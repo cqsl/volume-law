@@ -1,6 +1,7 @@
 import jax
 from flax import linen as nn
 
+
 # Define a simple feedforward neural network using Flax
 class SimpleModel(nn.Module):
     hidden_units: int

@@ -55,7 +55,6 @@ for i in range(n_Ns):
         entropies = load_dict(filename)
 
         if not (key in entropies):
-
             entropy_idx = 2
             subsys = np.arange(0, int(N / 2))
             entropy_value = renyin(entropy_idx, target_data, N, subsys)

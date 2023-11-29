@@ -24,7 +24,6 @@ def generate_symmetric_matrix(N, seed=1234):
 
 
 def compute_energy(N, state, seed=1234):
-
     hi = nk.hilbert.Spin(s=1 / 2, N=N)
 
     Gamma = -1
@@ -78,7 +77,6 @@ for i in range(n_Ns):
             )
 
             if not (key in best_energy_errors):
-
                 with open(
                     folder + f"sk_bestvar_N{N}_seed{seed}_alpha{alpha}.mpack", "rb"
                 ) as file:

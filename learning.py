@@ -17,7 +17,6 @@ def train(
     return_best_variables=False,
     return_best_entropy=False,
 ):
-
     if return_best_entropy:
         from renyin import renyin
 
@@ -69,7 +68,6 @@ def train(
         variables_history = []
 
     for epoch in tqdm(range(num_epochs_overlap)):
-
         variables, optimizer_state, loss_value = train_step(
             variables, optimizer_state, input_data, target_data, type
         )

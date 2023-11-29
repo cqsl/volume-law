@@ -68,9 +68,9 @@ def load_dict(file_path):
 
 folder = "energy_params_disf_simple/"
 
-N_values = [10, 12, 14, 16, 18, 20]
-seeds = range(10)
-alphas = [1]
+N_values = [10, 12, 14, 16, 18]
+seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+alphas = [1, 2, 4, 8, 16, 32, 64]
 
 n_Ns = len(N_values)
 n_seeds = len(seeds)

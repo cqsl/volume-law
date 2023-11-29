@@ -69,8 +69,8 @@ def load_dict(file_path):
 folder = "energy_params_disf_bf/"
 
 N_values = [10, 12, 14, 16, 18, 20]
-seeds = range(10)
-alphas = [1]
+seeds = range(30)
+alphas = [1/8, 1/4, 1/2, 1, 2]
 
 n_Ns = len(N_values)
 n_seeds = len(seeds)
@@ -90,7 +90,7 @@ for i in range(n_Ns):
             best_energy_errors = load_dict(filename)
             hi = nkx.hilbert.SpinOrbitalFermions(n_orbitals=N, n_fermions=N // 2)
             model = LogSlaterBfDeterminant(
-                hi, hidden_units=N * alpha, param_dtype=float
+                hi, hidden_units=int(N * alpha), param_dtype=float
             )
             vstate = nk.vqs.MCState(
                 sampler=nk.sampler.MetropolisLocal(hi), model=model, n_samples=1000

@@ -5,7 +5,7 @@ import optax
 import numpy as np
 from netket.jax import logsumexp_cplx
 from tqdm import tqdm
-
+import netket as nk
 
 def train(
     x_configs,
@@ -52,7 +52,10 @@ def train(
             if type == "overlap":
                 return overlap_loss(predictions, target_data)
 
-        loss_value, grad = jax.value_and_grad(loss_fn)(params)
+        loss_value, grad_fun = nk.jax.vjp(loss_fn, params, conjugate=True)
+        grad = grad_fun(jnp.ones_like(loss_value))[0]
+        grad = jax.tree_map(lambda x: nk.utils.mpi.mpi_mean_jax(x)[0], grad)
+
         updates, opt_state = optimizer.update(grad, opt_state)
         new_params = optax.apply_updates(params, updates)
         return new_params, opt_state, loss_value
